@@ -262,55 +262,76 @@ export const exportRequestsToPDF = (requests, filters = {}) => {
       filename += `_${filters.status.toLowerCase().replace(/\s+/g, '_')}`;
     }
     
-    // Create title based on filters
-    let title = 'Repair Requests Report';
-    
-    // Create PDF document
-    const doc = new jsPDF();
+    // Create PDF document - use landscape for more space
+    const doc = new jsPDF('landscape');
     
     // Add title
     doc.setFontSize(18);
-    doc.text(title, 14, 22);
+    doc.text('Repair Requests Report', 14, 22);
     doc.setFontSize(10);
     doc.text(`Generated on ${new Date().toLocaleDateString()}`, 14, 30);
     
-    // Create simple table
+    // Define table properties
     const headers = ['Request ID', 'Division', 'Equipment', 'Status', 'Requested', 'Completed'];
-    const colWidth = 30;
+    const colWidths = [35, 35, 50, 30, 30, 30]; // Different widths for columns
     const rowHeight = 10;
     let y = 40;
     
-    // Draw header
-    doc.setFillColor(66, 139, 202); // Blue header
-    doc.setTextColor(255, 255, 255); // White text for header
-    headers.forEach((header, i) => {
-      // Draw filled rectangle first
-      doc.rect(10 + (i * colWidth), y, colWidth, rowHeight, 'F');
-      // Then draw text
-      doc.text(header, 12 + (i * colWidth), y + 7);
+    // Calculate column start positions
+    const colStarts = [];
+    let xPos = 14;
+    colWidths.forEach(width => {
+      colStarts.push(xPos);
+      xPos += width;
     });
     
+    // Draw table grid
+    doc.setDrawColor(0); // Black borders
+    doc.setLineWidth(0.1);
+    
+    // Draw header background
+    doc.setFillColor(66, 139, 202);
+    doc.rect(colStarts[0], y, xPos - colStarts[0], rowHeight, 'F');
+    
+    // Draw header text
+    doc.setTextColor(255, 255, 255);
+    headers.forEach((header, i) => {
+      doc.text(header, colStarts[i] + 3, y + 7);
+    });
+    
+    // Draw borders for header
+    doc.setDrawColor(0);
+    doc.line(colStarts[0], y, xPos, y); // Top horizontal
+    doc.line(colStarts[0], y + rowHeight, xPos, y + rowHeight); // Bottom horizontal
+    colStarts.forEach(x => {
+      doc.line(x, y, x, y + rowHeight); // Vertical lines
+    });
+    doc.line(xPos, y, xPos, y + rowHeight); // Last vertical line
+    
     // Reset text color for rows
-    doc.setTextColor(0, 0, 0); // Black text for data
+    doc.setTextColor(0);
     
     // Draw rows
     requests.forEach((request, index) => {
       y += rowHeight;
       
       // Add new page if needed
-      if (y > 270) {
-        doc.addPage();
+      if (y > doc.internal.pageSize.height - 20) {
+        doc.addPage('landscape');
         y = 20;
       }
       
-      // Set alternating row background colors
+      // Set alternating row background
       if (index % 2 === 0) {
-        doc.setFillColor(240, 240, 240); // Light gray for even rows
+        doc.setFillColor(240, 240, 240);
       } else {
-        doc.setFillColor(255, 255, 255); // White for odd rows
+        doc.setFillColor(255, 255, 255);
       }
       
-      // Draw row cells with data
+      // Draw row background
+      doc.rect(colStarts[0], y, xPos - colStarts[0], rowHeight, 'F');
+      
+      // Draw row data
       const rowData = [
         request.id,
         request.division,
@@ -321,11 +342,22 @@ export const exportRequestsToPDF = (requests, filters = {}) => {
       ];
       
       rowData.forEach((text, i) => {
-        // Draw filled rectangle first
-        doc.rect(10 + (i * colWidth), y, colWidth, rowHeight, 'F');
-        // Then draw text (always black)
-        doc.text(String(text).substring(0, 14), 12 + (i * colWidth), y + 7);
+        // Truncate text if necessary
+        let cellText = String(text);
+        const maxChars = Math.floor(colWidths[i] / 2);
+        if (cellText.length > maxChars) {
+          cellText = cellText.substring(0, maxChars - 3) + '...';
+        }
+        
+        doc.text(cellText, colStarts[i] + 3, y + 7);
       });
+      
+      // Draw cell borders
+      doc.line(colStarts[0], y + rowHeight, xPos, y + rowHeight); // Bottom horizontal
+      colStarts.forEach(x => {
+        doc.line(x, y, x, y + rowHeight); // Vertical lines
+      });
+      doc.line(xPos, y, xPos, y + rowHeight); // Last vertical line
     });
     
     // Save PDF

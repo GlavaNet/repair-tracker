@@ -3,7 +3,7 @@ import { BellRing, FileText, LayoutDashboard, Settings, Wrench, Truck, User, Log
 
 const Navigation = ({ activeSection, setActiveSection, toggleKioskMode, handleLogout, user }) => {
   return (
-    <div className="w-64 bg-gray-800 text-white p-4">
+    <div className="w-64 bg-gray-800 text-white dark:bg-gray-900">
       <div className="flex items-center justify-center mb-8">
         <Wrench size={24} className="mr-2" />
         <h1 className="text-xl font-bold">Repair Tracker</h1>
@@ -14,7 +14,7 @@ const Navigation = ({ activeSection, setActiveSection, toggleKioskMode, handleLo
           <li>
             <button 
               onClick={() => setActiveSection('dashboard')}
-              className={`w-full text-left px-4 py-2 rounded flex items-center ${activeSection === 'dashboard' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
+              className={`w-full text-left px-4 py-2 rounded flex items-center ${activeSection === 'dashboard' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
             >
               <LayoutDashboard size={20} className="mr-3" /> Dashboard
             </button>
@@ -22,7 +22,7 @@ const Navigation = ({ activeSection, setActiveSection, toggleKioskMode, handleLo
           <li>
             <button 
               onClick={() => setActiveSection('requests')}
-              className={`w-full text-left px-4 py-2 rounded flex items-center ${activeSection === 'requests' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
+              className={`w-full text-left px-4 py-2 rounded flex items-center ${activeSection === 'requests' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
             >
               <BellRing size={20} className="mr-3" /> Repair Requests
             </button>
@@ -30,7 +30,7 @@ const Navigation = ({ activeSection, setActiveSection, toggleKioskMode, handleLo
           <li>
             <button 
               onClick={() => setActiveSection('equipment')}
-              className={`w-full text-left px-4 py-2 rounded flex items-center ${activeSection === 'equipment' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
+              className={`w-full text-left px-4 py-2 rounded flex items-center ${activeSection === 'equipment' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
             >
               <Truck size={20} className="mr-3" /> Equipment
             </button>
@@ -38,7 +38,7 @@ const Navigation = ({ activeSection, setActiveSection, toggleKioskMode, handleLo
           <li>
             <button 
               onClick={() => setActiveSection('reports')}
-              className={`w-full text-left px-4 py-2 rounded flex items-center ${activeSection === 'reports' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
+              className={`w-full text-left px-4 py-2 rounded flex items-center ${activeSection === 'reports' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
             >
               <FileText size={20} className="mr-3" /> Reports
             </button>
@@ -46,7 +46,7 @@ const Navigation = ({ activeSection, setActiveSection, toggleKioskMode, handleLo
           <li>
             <button 
               onClick={() => setActiveSection('settings')}
-              className={`w-full text-left px-4 py-2 rounded flex items-center ${activeSection === 'settings' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
+              className={`w-full text-left px-4 py-2 rounded flex items-center ${activeSection === 'settings' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
             >
               <Settings size={20} className="mr-3" /> Settings
             </button>

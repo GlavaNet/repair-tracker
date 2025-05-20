@@ -252,7 +252,7 @@ const App = () => {
   // Main application interface (only shown when authenticated)
   return (
     <AppContext.Provider value={contextValue}>
-      <div className="flex h-screen bg-gray-50">
+      <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
         <Navigation 
           activeSection={activeSection} 
           setActiveSection={setActiveSection}

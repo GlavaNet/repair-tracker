@@ -22,44 +22,44 @@ const Dashboard = () => {
   });
 
   return (
-    <div className="p-6">
+    <div className="p-6 dark:bg-gray-800 dark:text-white">
       <h2 className="text-2xl font-bold mb-6">Dashboard</h2>
       
       {/* Summary Cards */}
       <div className="grid grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-gray-500 text-sm font-medium mb-2">Open Requests</h3>
+        <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow">
+          <h3 className="text-gray-500 dark:text-gray-300 text-sm font-medium mb-2">Open Requests</h3>
           <div className="flex items-end">
-            <p className="text-3xl font-bold">{openRequestsCount}</p>
-            <p className="text-sm text-gray-500 ml-2 mb-1">requests</p>
+            <p className="text-3xl font-bold dark:text-white">{openRequestsCount}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-300 ml-2 mb-1">requests</p>
           </div>
         </div>
         
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-gray-500 text-sm font-medium mb-2">Awaiting Parts</h3>
+        <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow">
+          <h3 className="text-gray-500 dark:text-gray-300 text-sm font-medium mb-2">Awaiting Parts</h3>
           <div className="flex items-end">
-            <p className="text-3xl font-bold">{awaitingPartsCount}</p>
-            <p className="text-sm text-gray-500 ml-2 mb-1">requests</p>
+            <p className="text-3xl font-bold dark:text-white">{awaitingPartsCount}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-300 ml-2 mb-1">requests</p>
           </div>
         </div>
         
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-gray-500 text-sm font-medium mb-2">Completed This Week</h3>
+        <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow">
+          <h3 className="text-gray-500 dark:text-gray-300 text-sm font-medium mb-2">Completed This Week</h3>
           <div className="flex items-end">
-            <p className="text-3xl font-bold">{completedThisWeek}</p>
-            <p className="text-sm text-gray-500 ml-2 mb-1">requests</p>
+            <p className="text-3xl font-bold dark:text-white">{completedThisWeek}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-300 ml-2 mb-1">requests</p>
           </div>
         </div>
       </div>
       
       {/* Distribution by Division */}
-      <div className="bg-white p-6 rounded-lg shadow mb-8">
+      <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow mb-8">
         <h3 className="font-bold mb-4">Requests by Division</h3>
         <div className="space-y-4">
           {requestsByDivision.map(item => (
             <div key={item.division} className="flex items-center">
               <span className="w-32 text-sm">{item.division}</span>
-              <div className="flex-1 bg-gray-200 rounded-full h-2.5">
+              <div className="flex-1 bg-gray-200 dark:bg-gray-600 rounded-full h-2.5">
                 <div 
                   className="bg-blue-600 h-2.5 rounded-full" 
                   style={{ width: `${Math.max(5, (item.count / requests.length) * 100)}%` }}
@@ -72,15 +72,15 @@ const Dashboard = () => {
       </div>
       
       {/* Recent Activity */}
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow">
         <h3 className="font-bold mb-4">Recent Activity</h3>
         <div className="space-y-4">
           {requests.slice(0, 5).map(request => (
-            <div key={request.id} className="border-b pb-3">
+            <div key={request.id} className="border-b pb-3 dark:border-gray-600">
               <div className="flex justify-between">
                 <div>
                   <p className="font-medium">{request.equipmentName}</p>
-                  <p className="text-sm text-gray-500">{request.division} - {request.description}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-300">{request.division} - {request.description}</p>
                 </div>
                 <div>
                   <span className={`px-2 py-1 rounded-full text-xs ${
