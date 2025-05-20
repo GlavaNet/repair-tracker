@@ -120,12 +120,12 @@ const NewRequestModal = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b flex justify-between items-center">
-          <h3 className="text-lg font-medium">Create New Repair Request</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b dark:border-gray-700 flex justify-between items-center">
+          <h3 className="text-lg font-medium dark:text-white">Create New Repair Request</h3>
           <button 
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
           >
             <X size={20} />
           </button>
@@ -134,14 +134,14 @@ const NewRequestModal = ({ onClose }) => {
         <div className="p-6">
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Equipment *
               </label>
               <select 
                 name="equipmentId"
                 value={formData.equipmentId}
                 onChange={handleChange}
-                className={`w-full border rounded p-2 ${errors.equipmentId ? 'border-red-500' : ''}`}
+                className={`w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600 ${errors.equipmentId ? 'border-red-500 dark:border-red-500' : ''}`}
               >
                 <option value="">Select Equipment</option>
                 {equipment.map(item => (
@@ -156,14 +156,14 @@ const NewRequestModal = ({ onClose }) => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Division
               </label>
               <select 
                 name="division"
                 value={formData.division}
                 onChange={handleChange}
-                className="w-full border rounded p-2"
+                className="w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 disabled={formData.equipmentId !== ''}
               >
                 <option value="">Select Division</option>
@@ -171,11 +171,11 @@ const NewRequestModal = ({ onClose }) => {
                   <option key={division} value={division}>{division}</option>
                 ))}
               </select>
-              <p className="text-xs text-gray-500 mt-1">Auto-selected from equipment</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Auto-selected from equipment</p>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Requester Name *
               </label>
               <input 
@@ -184,7 +184,7 @@ const NewRequestModal = ({ onClose }) => {
                 value={formData.requesterName}
                 onChange={handleChange}
                 placeholder="Your name"
-                className={`w-full border rounded p-2 ${errors.requesterName ? 'border-red-500' : ''}`}
+                className={`w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600 ${errors.requesterName ? 'border-red-500 dark:border-red-500' : ''}`}
               />
               {errors.requesterName && (
                 <p className="text-red-500 text-xs mt-1">{errors.requesterName}</p>
@@ -192,7 +192,7 @@ const NewRequestModal = ({ onClose }) => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Job/Location *
               </label>
               <input 
@@ -201,7 +201,7 @@ const NewRequestModal = ({ onClose }) => {
                 value={formData.jobLocation}
                 onChange={handleChange}
                 placeholder="Where is the equipment located?"
-                className={`w-full border rounded p-2 ${errors.jobLocation ? 'border-red-500' : ''}`}
+                className={`w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600 ${errors.jobLocation ? 'border-red-500 dark:border-red-500' : ''}`}
               />
               {errors.jobLocation && (
                 <p className="text-red-500 text-xs mt-1">{errors.jobLocation}</p>
@@ -209,7 +209,7 @@ const NewRequestModal = ({ onClose }) => {
             </div>
             
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Issue Description *
               </label>
               <textarea
@@ -218,7 +218,7 @@ const NewRequestModal = ({ onClose }) => {
                 onChange={handleChange}
                 placeholder="Describe the issue in detail"
                 rows={4}
-                className={`w-full border rounded p-2 ${errors.description ? 'border-red-500' : ''}`}
+                className={`w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600 ${errors.description ? 'border-red-500 dark:border-red-500' : ''}`}
               ></textarea>
               {errors.description && (
                 <p className="text-red-500 text-xs mt-1">{errors.description}</p>
@@ -230,7 +230,7 @@ const NewRequestModal = ({ onClose }) => {
             <button 
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border rounded text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 border rounded text-gray-700 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
               disabled={isSubmitting}
             >
               Cancel

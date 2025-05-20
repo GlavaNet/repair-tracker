@@ -142,12 +142,12 @@ const NewEquipmentModal = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b flex justify-between items-center">
-          <h3 className="text-lg font-medium">Add New Equipment</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b dark:border-gray-700 flex justify-between items-center">
+          <h3 className="text-lg font-medium dark:text-white">Add New Equipment</h3>
           <button 
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
           >
             <X size={20} />
           </button>
@@ -156,7 +156,7 @@ const NewEquipmentModal = ({ onClose }) => {
         <div className="p-6">
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Equipment Name *
               </label>
               <input 
@@ -165,7 +165,7 @@ const NewEquipmentModal = ({ onClose }) => {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Descriptive name (e.g. Forklift #3)"
-                className={`w-full border rounded p-2 ${errors.name ? 'border-red-500' : ''}`}
+                className={`w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600 ${errors.name ? 'border-red-500 dark:border-red-500' : ''}`}
               />
               {errors.name && (
                 <p className="text-red-500 text-xs mt-1">{errors.name}</p>
@@ -173,14 +173,14 @@ const NewEquipmentModal = ({ onClose }) => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Division *
               </label>
               <select 
                 name="division"
                 value={formData.division}
                 onChange={handleChange}
-                className={`w-full border rounded p-2 ${errors.division ? 'border-red-500' : ''}`}
+                className={`w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600 ${errors.division ? 'border-red-500 dark:border-red-500' : ''}`}
               >
                 <option value="">Select Division</option>
                 {divisions.map(division => (
@@ -193,7 +193,7 @@ const NewEquipmentModal = ({ onClose }) => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Year *
               </label>
               <input 
@@ -203,7 +203,7 @@ const NewEquipmentModal = ({ onClose }) => {
                 max={new Date().getFullYear() + 1}
                 value={formData.year}
                 onChange={handleChange}
-                className={`w-full border rounded p-2 ${errors.year ? 'border-red-500' : ''}`}
+                className={`w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600 ${errors.year ? 'border-red-500 dark:border-red-500' : ''}`}
               />
               {errors.year && (
                 <p className="text-red-500 text-xs mt-1">{errors.year}</p>
@@ -211,7 +211,7 @@ const NewEquipmentModal = ({ onClose }) => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Make *
               </label>
               <input 
@@ -220,7 +220,7 @@ const NewEquipmentModal = ({ onClose }) => {
                 value={formData.make}
                 onChange={handleChange}
                 placeholder="Manufacturer"
-                className={`w-full border rounded p-2 ${errors.make ? 'border-red-500' : ''}`}
+                className={`w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600 ${errors.make ? 'border-red-500 dark:border-red-500' : ''}`}
               />
               {errors.make && (
                 <p className="text-red-500 text-xs mt-1">{errors.make}</p>
@@ -228,7 +228,7 @@ const NewEquipmentModal = ({ onClose }) => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Model *
               </label>
               <input 
@@ -237,7 +237,7 @@ const NewEquipmentModal = ({ onClose }) => {
                 value={formData.model}
                 onChange={handleChange}
                 placeholder="Model number/name"
-                className={`w-full border rounded p-2 ${errors.model ? 'border-red-500' : ''}`}
+                className={`w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600 ${errors.model ? 'border-red-500 dark:border-red-500' : ''}`}
               />
               {errors.model && (
                 <p className="text-red-500 text-xs mt-1">{errors.model}</p>
@@ -245,7 +245,7 @@ const NewEquipmentModal = ({ onClose }) => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 VIN/Serial Number
               </label>
               <input 
@@ -254,20 +254,20 @@ const NewEquipmentModal = ({ onClose }) => {
                 value={formData.vin}
                 onChange={handleChange}
                 placeholder="Identification number"
-                className="w-full border rounded p-2"
+                className="w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600"
               />
             </div>
             
-            <div className="col-span-2 border-t pt-4 mt-2">
-              <h4 className="font-medium mb-2">Parts Information</h4>
-              <p className="text-xs text-gray-500 mb-2">
+            <div className="col-span-2 border-t dark:border-gray-700 pt-4 mt-2">
+              <h4 className="font-medium mb-2 dark:text-white">Parts Information</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
                 This information helps with ordering replacement parts.
                 Some fields are auto-filled based on equipment details.
               </p>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Parts Make
               </label>
               <input 
@@ -276,12 +276,12 @@ const NewEquipmentModal = ({ onClose }) => {
                 value={formData.partsMake}
                 onChange={handleChange}
                 placeholder="Parts manufacturer"
-                className="w-full border rounded p-2"
+                className="w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Parts Model
               </label>
               <input 
@@ -290,12 +290,12 @@ const NewEquipmentModal = ({ onClose }) => {
                 value={formData.partsModel}
                 onChange={handleChange}
                 placeholder="Parts model/number"
-                className="w-full border rounded p-2"
+                className="w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600"
               />
             </div>
             
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Parts VIN/Reference
               </label>
               <input 
@@ -304,7 +304,7 @@ const NewEquipmentModal = ({ onClose }) => {
                 value={formData.partsVin}
                 onChange={handleChange}
                 placeholder="Parts reference number (auto-generated if empty)"
-                className="w-full border rounded p-2"
+                className="w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600"
               />
             </div>
           </div>
@@ -313,7 +313,7 @@ const NewEquipmentModal = ({ onClose }) => {
             <button 
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border rounded text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 border rounded text-gray-700 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
               disabled={isSubmitting}
             >
               Cancel

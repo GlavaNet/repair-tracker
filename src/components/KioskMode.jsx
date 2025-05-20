@@ -17,17 +17,17 @@ const KioskMode = ({ requests, toggleKioskMode, divisions, isAuthenticated }) =>
   });
 
   return (
-    <div className="h-screen bg-black text-white">
+    <div className="h-screen bg-black text-white dark:bg-gray-900">
       <div className="p-2">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-3xl font-bold">Open Repair Requests</h1>
           <div className="flex items-center space-x-3">
-            <div className="bg-gray-800 rounded px-2 py-1 flex items-center space-x-2">
+            <div className="bg-gray-800 dark:bg-gray-700 rounded px-2 py-1 flex items-center space-x-2">
               <Filter size={14} className="text-gray-400" />
               <select 
                 value={kioskStatusFilter}
                 onChange={(e) => setKioskStatusFilter(e.target.value)}
-                className="bg-gray-800 text-white border-none focus:ring-0"
+                className="bg-gray-800 dark:bg-gray-700 text-white border-none focus:ring-0"
               >
                 <option value="All">All Status</option>
                 <option value="New">New</option>
@@ -36,11 +36,11 @@ const KioskMode = ({ requests, toggleKioskMode, divisions, isAuthenticated }) =>
               </select>
             </div>
             
-            <div className="bg-gray-800 rounded px-2 py-1">
+            <div className="bg-gray-800 dark:bg-gray-700 rounded px-2 py-1">
               <select 
                 value={kioskDivisionFilter}
                 onChange={(e) => setKioskDivisionFilter(e.target.value)}
-                className="bg-gray-800 text-white border-none focus:ring-0"
+                className="bg-gray-800 dark:bg-gray-700 text-white border-none focus:ring-0"
               >
                 <option value="All">All Divisions</option>
                 {divisions && divisions.map(division => (
@@ -71,7 +71,7 @@ const KioskMode = ({ requests, toggleKioskMode, divisions, isAuthenticated }) =>
             filteredRequests.map(request => (
               <div 
                 key={request.id}
-                className="bg-gray-800 p-3 rounded-lg border border-gray-700 kiosk-fade-in"
+                className="bg-gray-800 dark:bg-gray-800 p-3 rounded-lg border border-gray-700 kiosk-fade-in"
               >
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center">
@@ -118,7 +118,7 @@ const KioskMode = ({ requests, toggleKioskMode, divisions, isAuthenticated }) =>
               </div>
             ))
           ) : (
-            <div className="bg-gray-800 p-6 rounded-lg text-center">
+            <div className="bg-gray-800 dark:bg-gray-800 p-6 rounded-lg text-center">
               <p className="text-xl">No open repair requests found.</p>
               <p className="text-gray-400 mt-2">All requests have been completed or don't match your filters.</p>
             </div>
@@ -127,7 +127,7 @@ const KioskMode = ({ requests, toggleKioskMode, divisions, isAuthenticated }) =>
       </div>
       
       {/* Footer with auto-refresh information */}
-      <div className="fixed bottom-0 left-0 w-full bg-gray-900 p-2">
+      <div className="fixed bottom-0 left-0 w-full bg-gray-900 dark:bg-gray-900 p-2">
         <div className="flex justify-between items-center">
           <p className="text-xs text-gray-500">
             Last updated: {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}
