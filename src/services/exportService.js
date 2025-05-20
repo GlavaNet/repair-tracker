@@ -1,19 +1,36 @@
 // Service for handling exports to Excel and PDF
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 
 // Export data to Excel
 export const exportToExcel = (data, filename = 'export.xlsx') => {
-  // Create worksheet from data
-  const worksheet = XLSX.utils.json_to_sheet(data);
+  // Create a new workbook and worksheet
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Sheet1');
   
-  // Create workbook and add the worksheet
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+  // Add headers
+  if (data.length > 0) {
+    worksheet.columns = Object.keys(data[0]).map(key => ({
+      header: key,
+      key: key,
+      width: 20
+    }));
+  }
   
-  // Generate Excel file and trigger download
-  XLSX.writeFile(workbook, filename);
+  // Add rows
+  worksheet.addRows(data);
+  
+  // Write to file
+  workbook.xlsx.writeBuffer().then(buffer => {
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
 };
 
 // Export data to PDF
