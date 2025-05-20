@@ -25,7 +25,7 @@ const App = () => {
   const [filterDivision, setFilterDivision] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
   const [user, setUser] = useState(null);
-  const [loggingIn, setLoggingIn] = useState(false);
+  const [showLoginConfirm, setShowLoginConfirm] = useState(false);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -59,22 +59,25 @@ const App = () => {
     }
   }, [requests, equipment]);
 
-  // Handle login button click
+  // Handle login button click - just show confirmation dialog
   const handleLoginClick = () => {
-    // Instead of logging in directly, set a loading state
-    setLoggingIn(true);
-    
-    // Display an alert to verify the login flow
-    alert("Login requested. Click OK to continue.");
-    
-    // Now proceed with login
+    setShowLoginConfirm(true);
+  };
+  
+  // Actual login function - separate from button handler
+  const confirmLogin = () => {
     setIsAuthenticated(true);
     setUser({
       name: 'Admin User',
       email: 'admin@example.com',
       role: 'admin'
     });
-    setLoggingIn(false);
+    setShowLoginConfirm(false);
+  };
+  
+  // Cancel login
+  const cancelLogin = () => {
+    setShowLoginConfirm(false);
   };
 
   // Handle logout
@@ -134,13 +137,33 @@ const App = () => {
         <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
           <h1 className="text-2xl font-bold mb-6 text-center">Repair Request Tracker</h1>
           <p className="mb-6 text-center text-gray-600">Sign in with your Microsoft account</p>
-          <button 
-            onClick={handleLoginClick}
-            disabled={loggingIn}
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-          >
-            {loggingIn ? 'Signing in...' : 'Sign In with Microsoft'}
-          </button>
+          
+          {showLoginConfirm ? (
+            <div>
+              <p className="mb-4 text-center">This is a demo login. Would you like to continue?</p>
+              <div className="flex space-x-4">
+                <button 
+                  onClick={cancelLogin}
+                  className="flex-1 bg-gray-300 text-gray-800 py-2 rounded hover:bg-gray-400 transition"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={confirmLogin}
+                  className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+                >
+                  Confirm Login
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button 
+              onClick={handleLoginClick}
+              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+            >
+              Sign In with Microsoft
+            </button>
+          )}
         </div>
       </div>
     );
