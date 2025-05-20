@@ -15,12 +15,14 @@ import { divisions } from '../data/divisions';
 import { requests as initialRequests } from '../data/requests';
 import { equipment as initialEquipment } from '../data/equipment';
 
-// MSAL configuration
+// MSAL configuration - Fixed environment variable access
 const msalConfig = {
   auth: {
     clientId: import.meta.env.VITE_MSAL_CLIENT_ID || 'mock-client-id',
     authority: `https://login.microsoftonline.com/${import.meta.env.VITE_MSAL_TENANT_ID || 'mock-tenant-id'}`,
-    redirectUri: window.location.origin,
+    redirectUri: window.location.href.includes('github.io') 
+      ? 'https://glavanet.github.io/repair-tracker/' 
+      : window.location.origin,
   },
   cache: {
     cacheLocation: 'localStorage',
@@ -51,6 +53,12 @@ const App = () => {
 
   // Load data and check authentication on mount
   useEffect(() => {
+    // For debugging - log if environment variables are present
+    console.log('Environment variables check:', {
+      clientId: Boolean(import.meta.env.VITE_MSAL_CLIENT_ID),
+      tenantId: Boolean(import.meta.env.VITE_MSAL_TENANT_ID),
+    });
+    
     // Load data regardless of authentication
     loadData();
     
@@ -102,6 +110,7 @@ const App = () => {
   const handleLogin = async () => {
     try {
       setIsLoading(true);
+      // Proceed with real authentication only
       const authResult = await msalInstance.loginPopup(loginRequest);
       
       if (authResult) {
