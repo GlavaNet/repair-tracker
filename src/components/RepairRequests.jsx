@@ -1,6 +1,8 @@
+// src/components/RepairRequests.jsx
 import React, { useContext, useState } from 'react';
 import { Filter, Calendar } from 'lucide-react';
 import { AppContext } from '../context/AppContext';
+import NewRequestModal from './NewRequestModal'; // Import the new component
 
 const RepairRequests = () => {
   const { 
@@ -14,8 +16,12 @@ const RepairRequests = () => {
     handleCompleteRequest
   } = useContext(AppContext);
 
+  // State for search and date filters
   const [searchTerm, setSearchTerm] = useState('');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  
+  // State for new request modal
+  const [showNewRequestModal, setShowNewRequestModal] = useState(false);
 
   // Generate new request ID
   const generateRequestId = () => {
@@ -52,10 +58,7 @@ const RepairRequests = () => {
       <div className="flex justify-between mb-6">
         <h2 className="text-2xl font-bold">Repair Requests</h2>
         <button 
-          onClick={() => {
-            // Open new request form or modal
-            alert('New request form would open here');
-          }}
+          onClick={() => setShowNewRequestModal(true)}
           className="bg-blue-600 text-white px-4 py-2 rounded"
         >
           + New Request
@@ -221,6 +224,11 @@ const RepairRequests = () => {
           </tbody>
         </table>
       </div>
+      
+      {/* New Request Modal */}
+      {showNewRequestModal && (
+        <NewRequestModal onClose={() => setShowNewRequestModal(false)} />
+      )}
     </div>
   );
 };

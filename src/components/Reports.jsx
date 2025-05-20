@@ -1,28 +1,21 @@
+// src/components/Reports.jsx
 import React, { useContext, useState } from 'react';
 import { FileText, File } from 'lucide-react';
 import { AppContext } from '../context/AppContext';
-import { formatDate } from '../utils/dateUtils';
+import { 
+  exportRequestsToExcel, 
+  exportRequestsToPDF, 
+  exportEquipmentToExcel 
+} from '../services/exportService';
 
 const Reports = () => {
-  const { requests, divisions } = useContext(AppContext);
+  const { requests, equipment, divisions } = useContext(AppContext);
   
   const [reportType, setReportType] = useState('all');
   const [reportDivision, setReportDivision] = useState('All');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
-
-  // Export to Excel
-  const exportToExcel = () => {
-    // In a real implementation, this would use the xlsx library
-    // to generate and download an Excel file
-    alert('Excel export would be generated here');
-  };
-
-  // Export to PDF
-  const exportToPDF = () => {
-    // In a real implementation, this would use jspdf and jspdf-autotable
-    // to generate and download a PDF file
-    alert('PDF export would be generated here');
-  };
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState(null);
 
   // Generate report based on filters
   const generateReport = () => {
@@ -36,6 +29,9 @@ const Reports = () => {
       filteredRequests = filteredRequests.filter(req => req.dateCompleted !== null);
     } else if (reportType === 'awaiting') {
       filteredRequests = filteredRequests.filter(req => req.status === 'Awaiting Parts');
+    } else if (reportType === 'equipment') {
+      // Special case for equipment report - return empty array for requests
+      return [];
     }
     
     // Filter by division
@@ -56,6 +52,87 @@ const Reports = () => {
     
     return filteredRequests;
   };
+  
+  // Get equipment for equipment report
+  const getFilteredEquipment = () => {
+    if (reportType !== 'equipment') {
+      return [];
+    }
+    
+    let filteredEquipment = [...equipment];
+    
+    // Filter by division
+    if (reportDivision !== 'All') {
+      filteredEquipment = filteredEquipment.filter(item => item.division === reportDivision);
+    }
+    
+    return filteredEquipment;
+  };
+
+  // Handle excel export
+  const handleExcelExport = async () => {
+    setIsExporting(true);
+    setExportError(null);
+    
+    try {
+      if (reportType === 'equipment') {
+        // Export equipment to Excel
+        const filteredEquipment = getFilteredEquipment();
+        await exportEquipmentToExcel(filteredEquipment, {
+          division: reportDivision
+        });
+      } else {
+        // Export requests to Excel
+        const filteredRequests = generateReport();
+        await exportRequestsToExcel(filteredRequests, {
+          division: reportDivision,
+          status: reportType !== 'all' ? reportType : 'All',
+          dateRange: dateRange.start && dateRange.end ? dateRange : null
+        });
+      }
+    } catch (error) {
+      console.error('Export to Excel failed:', error);
+      setExportError('Failed to export to Excel. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Handle PDF export
+  const handlePDFExport = async () => {
+    setIsExporting(true);
+    setExportError(null);
+    
+    try {
+      if (reportType === 'equipment') {
+        // Equipment doesn't have PDF export in this version
+        setExportError('PDF export for equipment is not available yet.');
+        return;
+      }
+      
+      // Export requests to PDF
+      const filteredRequests = generateReport();
+      await exportRequestsToPDF(filteredRequests, {
+        division: reportDivision,
+        status: reportType !== 'all' ? reportType : 'All',
+        dateRange: dateRange.start && dateRange.end ? dateRange : null
+      });
+    } catch (error) {
+      console.error('Export to PDF failed:', error);
+      setExportError('Failed to export to PDF. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Get preview data based on report type
+  const getPreviewData = () => {
+    if (reportType === 'equipment') {
+      return getFilteredEquipment();
+    } else {
+      return generateReport();
+    }
+  };
 
   return (
     <div className="p-6">
@@ -64,7 +141,13 @@ const Reports = () => {
       <div className="bg-white p-6 rounded-lg shadow mb-6">
         <h3 className="font-medium mb-4">Generate Report</h3>
         
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        {exportError && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+            {exportError}
+          </div>
+        )}
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Report Type
@@ -73,11 +156,13 @@ const Reports = () => {
               value={reportType}
               onChange={(e) => setReportType(e.target.value)}
               className="w-full border rounded p-2"
+              disabled={isExporting}
             >
               <option value="all">All Repair Requests</option>
               <option value="open">Open Requests</option>
               <option value="completed">Completed Requests</option>
               <option value="awaiting">Awaiting Parts</option>
+              <option value="equipment">Equipment Inventory</option>
             </select>
           </div>
           
@@ -89,6 +174,7 @@ const Reports = () => {
               value={reportDivision}
               onChange={(e) => setReportDivision(e.target.value)}
               className="w-full border rounded p-2"
+              disabled={isExporting}
             >
               <option value="All">All Divisions</option>
               {divisions.map(division => (
@@ -97,7 +183,7 @@ const Reports = () => {
             </select>
           </div>
           
-          <div>
+          <div className={reportType === 'equipment' ? 'hidden' : ''}>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Date Range
             </label>
@@ -106,14 +192,16 @@ const Reports = () => {
                 type="date" 
                 value={dateRange.start}
                 onChange={(e) => setDateRange({...dateRange, start: e.target.value})}
-                className="w-full border rounded p-2" 
+                className="w-full border rounded p-2"
+                disabled={isExporting || reportType === 'equipment'}
               />
               <span className="flex items-center">to</span>
               <input 
                 type="date" 
                 value={dateRange.end}
                 onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
-                className="w-full border rounded p-2" 
+                className="w-full border rounded p-2"
+                disabled={isExporting || reportType === 'equipment'}
               />
             </div>
           </div>
@@ -121,16 +209,23 @@ const Reports = () => {
         
         <div className="flex items-center space-x-4">
           <button 
-            onClick={exportToExcel}
+            onClick={handleExcelExport}
             className="bg-blue-600 text-white px-4 py-2 rounded flex items-center"
+            disabled={isExporting}
           >
-            <FileText size={18} className="mr-2" /> Export to Excel
+            <FileText size={18} className="mr-2" /> 
+            {isExporting ? 'Exporting...' : 'Export to Excel'}
           </button>
           <button 
-            onClick={exportToPDF}
-            className="bg-red-600 text-white px-4 py-2 rounded flex items-center"
+            onClick={handlePDFExport}
+            className={`bg-red-600 text-white px-4 py-2 rounded flex items-center ${
+              reportType === 'equipment' ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+            disabled={isExporting || reportType === 'equipment'}
+            title={reportType === 'equipment' ? 'PDF export not available for equipment' : ''}
           >
-            <File size={18} className="mr-2" /> Export to PDF
+            <File size={18} className="mr-2" /> 
+            {isExporting ? 'Exporting...' : 'Export to PDF'}
           </button>
         </div>
       </div>
@@ -139,61 +234,128 @@ const Reports = () => {
         <h3 className="font-medium mb-4">Report Preview</h3>
         
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Request ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Division
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Equipment
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Requested
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Completed
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {generateReport().map(request => (
-                <tr key={request.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    {request.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    {request.division}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    {request.equipmentName}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      request.status === 'Awaiting Parts' ? 'bg-yellow-100 text-yellow-800' : 
-                      request.status === 'In Progress' ? 'bg-blue-100 text-blue-800' : 
-                      request.status === 'Completed' ? 'bg-green-100 text-green-800' : 
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {request.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    {request.dateRequested}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    {request.dateCompleted || '-'}
-                  </td>
+          {reportType === 'equipment' ? (
+            // Equipment preview table
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Equipment ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Division
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Year
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Make/Model
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    VIN
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {getFilteredEquipment().map(item => (
+                  <tr key={item.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {item.id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {item.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {item.division}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {item.year}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {item.make} {item.model}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {item.vin}
+                    </td>
+                  </tr>
+                ))}
+                {getFilteredEquipment().length === 0 && (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
+                      No equipment found matching your filters.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          ) : (
+            // Requests preview table
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Request ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Division
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Equipment
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Requested
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Completed
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {generateReport().map(request => (
+                  <tr key={request.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {request.id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {request.division}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {request.equipmentName}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        request.status === 'Awaiting Parts' ? 'bg-yellow-100 text-yellow-800' : 
+                        request.status === 'In Progress' ? 'bg-blue-100 text-blue-800' : 
+                        request.status === 'Completed' ? 'bg-green-100 text-green-800' : 
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {request.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {request.dateRequested}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {request.dateCompleted || '-'}
+                    </td>
+                  </tr>
+                ))}
+                {generateReport().length === 0 && (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
+                      No requests found matching your filters.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>
