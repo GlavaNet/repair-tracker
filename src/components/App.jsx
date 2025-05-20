@@ -222,10 +222,9 @@ const App = () => {
   if (isKioskMode) {
     return (
       <KioskMode 
-        requests={filteredRequests} 
+        requests={requests} 
         toggleKioskMode={enterAdminMode}
-        filterDivision={filterDivision}
-        filterStatus={filterStatus}
+        divisions={divisions}
         isAuthenticated={isAuthenticated}
       />
     );

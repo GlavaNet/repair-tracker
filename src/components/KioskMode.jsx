@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
-import { Monitor, LogIn } from 'lucide-react';
+import { Monitor, LogIn, Filter } from 'lucide-react';
 
-const KioskMode = ({ requests, toggleKioskMode, filterDivision, filterStatus, isAuthenticated }) => {
+const KioskMode = ({ requests, toggleKioskMode, divisions, isAuthenticated }) => {
   // Only show open requests in kiosk mode
   const openRequests = requests.filter(req => req.dateCompleted === null);
   
   // Filter options for kiosk view
-  const [kioskFilter, setKioskFilter] = useState('All');
+  const [kioskStatusFilter, setKioskStatusFilter] = useState('All');
+  const [kioskDivisionFilter, setKioskDivisionFilter] = useState('All');
   
-  // Filter requests based on kiosk filter
-  const filteredRequests = kioskFilter === 'All' 
-    ? openRequests 
-    : openRequests.filter(req => req.status === kioskFilter);
+  // Filter requests based on kiosk filters
+  const filteredRequests = openRequests.filter(req => {
+    const statusMatch = kioskStatusFilter === 'All' || req.status === kioskStatusFilter;
+    const divisionMatch = kioskDivisionFilter === 'All' || req.division === kioskDivisionFilter;
+    return statusMatch && divisionMatch;
+  });
 
   return (
     <div className="h-screen bg-black text-white">
@@ -19,18 +22,33 @@ const KioskMode = ({ requests, toggleKioskMode, filterDivision, filterStatus, is
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-3xl font-bold">Open Repair Requests</h1>
           <div className="flex items-center space-x-3">
-            <div className="bg-gray-800 rounded px-2 py-1">
+            <div className="bg-gray-800 rounded px-2 py-1 flex items-center space-x-2">
+              <Filter size={14} className="text-gray-400" />
               <select 
-                value={kioskFilter}
-                onChange={(e) => setKioskFilter(e.target.value)}
+                value={kioskStatusFilter}
+                onChange={(e) => setKioskStatusFilter(e.target.value)}
                 className="bg-gray-800 text-white border-none focus:ring-0"
               >
-                <option value="All">All Open</option>
+                <option value="All">All Status</option>
                 <option value="New">New</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Awaiting Parts">Awaiting Parts</option>
               </select>
             </div>
+            
+            <div className="bg-gray-800 rounded px-2 py-1">
+              <select 
+                value={kioskDivisionFilter}
+                onChange={(e) => setKioskDivisionFilter(e.target.value)}
+                className="bg-gray-800 text-white border-none focus:ring-0"
+              >
+                <option value="All">All Divisions</option>
+                {divisions && divisions.map(division => (
+                  <option key={division} value={division}>{division}</option>
+                ))}
+              </select>
+            </div>
+            
             <button 
               onClick={toggleKioskMode}
               className="bg-blue-600 text-white px-3 py-1 rounded flex items-center"
@@ -102,7 +120,7 @@ const KioskMode = ({ requests, toggleKioskMode, filterDivision, filterStatus, is
           ) : (
             <div className="bg-gray-800 p-6 rounded-lg text-center">
               <p className="text-xl">No open repair requests found.</p>
-              <p className="text-gray-400 mt-2">All requests have been completed!</p>
+              <p className="text-gray-400 mt-2">All requests have been completed or don't match your filters.</p>
             </div>
           )}
         </div>
