@@ -105,6 +105,7 @@ export const exportToExcel = async (data, options = {}) => {
  * @param {String} options.title - Document title
  * @returns {Promise} - Promise resolving when export is complete
  */
+// Modified version for exportToPDF function
 export const exportToPDF = (data, options = {}) => {
   try {
     const {
@@ -114,53 +115,80 @@ export const exportToPDF = (data, options = {}) => {
       columns = []
     } = options;
     
-    // Initialize PDF document (landscape or portrait based on columns)
-    const orientation = columns.length > 5 ? 'landscape' : 'portrait';
-    const doc = new jsPDF({ orientation });
+    // Create document
+    const doc = new jsPDF(columns.length > 5 ? 'landscape' : 'portrait');
     
-    // Add title and subtitle
+    // Add title
     doc.setFontSize(18);
     doc.text(title, 14, 22);
     doc.setFontSize(10);
     doc.text(subtitle, 14, 30);
     
-    // Prepare column headers and data for autotable
+    // Prepare headers and data
     let headers = [];
     let tableData = [];
     
     if (columns.length > 0) {
-      // Use provided column definitions
       headers = columns.map(col => col.header);
       tableData = data.map(item => 
-        columns.map(col => {
-          const value = item[col.key];
-          return value === null || value === undefined ? '' : String(value);
-        })
+        columns.map(col => item[col.key] || '')
       );
     } else if (data.length > 0) {
-      // Use all keys from the first data object
       headers = Object.keys(data[0]);
       tableData = data.map(item => 
-        headers.map(key => {
-          const value = item[key];
-          return value === null || value === undefined ? '' : String(value);
-        })
+        headers.map(key => item[key] || '')
       );
     }
     
-    // Create table
-    doc.autoTable({
-      head: [headers],
-      body: tableData,
-      startY: 35,
-      styles: { fontSize: 8, cellPadding: 2 },
-      headStyles: {
-        fillColor: [66, 139, 202],
-        textColor: [255, 255, 255],
-        fontStyle: 'bold'
-      },
-      alternateRowStyles: { fillColor: [240, 240, 240] },
-      margin: { left: 14, right: 14 }
+    // Direct implementation without relying on the plugin's autoTable
+    const startY = 35;
+    const cellPadding = 5;
+    const rowHeight = 10;
+    let currentY = startY;
+    
+    // Draw header
+    doc.setFillColor(66, 139, 202);
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    
+    let startX = 14;
+    const colWidth = ((doc.internal.pageSize.width - 28) / headers.length);
+    
+    // Draw header cells
+    headers.forEach((header, i) => {
+      doc.rect(startX, currentY, colWidth, rowHeight, 'F');
+      doc.text(header, startX + cellPadding, currentY + rowHeight - cellPadding);
+      startX += colWidth;
+    });
+    
+    currentY += rowHeight;
+    
+    // Draw data rows
+    doc.setTextColor(0, 0, 0);
+    tableData.forEach((row, rowIndex) => {
+      startX = 14;
+      
+      // Set alternate row background
+      if (rowIndex % 2 === 0) {
+        doc.setFillColor(240, 240, 240);
+      } else {
+        doc.setFillColor(255, 255, 255);
+      }
+      
+      // Draw row cells
+      row.forEach((cell, i) => {
+        doc.rect(startX, currentY, colWidth, rowHeight, 'F');
+        doc.text(String(cell), startX + cellPadding, currentY + rowHeight - cellPadding);
+        startX += colWidth;
+      });
+      
+      currentY += rowHeight;
+      
+      // Add new page if needed
+      if (currentY > doc.internal.pageSize.height - 20) {
+        doc.addPage();
+        currentY = 20;
+      }
     });
     
     // Save PDF
