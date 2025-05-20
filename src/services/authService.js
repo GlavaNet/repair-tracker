@@ -4,8 +4,8 @@ import { PublicClientApplication } from '@azure/msal-browser';
 // MSAL configuration
 const msalConfig = {
   auth: {
-    clientId: 'your-client-id-here',  // Replace with your actual client ID
-    authority: 'https://login.microsoftonline.com/your-tenant-id',  // Replace with your tenant ID
+    clientId: import.meta.env.VITE_MSAL_CLIENT_ID,
+    authority: `https://login.microsoftonline.com/${import.meta.env.VITE_MSAL_TENANT_ID}`,
     redirectUri: window.location.origin,
   },
   cache: {
