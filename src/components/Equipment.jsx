@@ -14,6 +14,7 @@ const Equipment = () => {
   const [selectedEquipment, setSelectedEquipment] = useState(null);
   const [equipmentToEdit, setEquipmentToEdit] = useState(null);
   const [equipmentToDelete, setEquipmentToDelete] = useState(null);
+  const [equipmentForHistory, setEquipmentForHistory] = useState(null);
   
   // State for new equipment modal
   const [showNewEquipmentModal, setShowNewEquipmentModal] = useState(false);
@@ -34,13 +35,29 @@ const Equipment = () => {
   const showEquipmentDetails = (equipmentId) => {
     const item = equipment.find(eq => eq.id === equipmentId);
     setSelectedEquipment(item);
+    // Reset other modals
+    setEquipmentToEdit(null);
+    setEquipmentToDelete(null);
   };
 
-  // Show edit modal
+  // Show edit modal directly
   const showEditModal = (e, equipmentId) => {
     e.stopPropagation(); // Prevent row click from triggering
     const item = equipment.find(eq => eq.id === equipmentId);
     setEquipmentToEdit(item);
+    // Reset other modals
+    setSelectedEquipment(null);
+    setEquipmentToDelete(null);
+  };
+
+  // Show repair history
+  const showRepairHistory = (equipmentItem) => {
+    // Close all other modals first
+    setSelectedEquipment(null);
+    setEquipmentToEdit(null);
+    setEquipmentToDelete(null);
+    // Then set the equipment for repair history
+    setTimeout(() => setEquipmentForHistory(equipmentItem), 50);
   };
 
   // Show delete confirmation
@@ -48,6 +65,9 @@ const Equipment = () => {
     e.stopPropagation(); // Prevent row click from triggering
     const item = equipment.find(eq => eq.id === equipmentId);
     setEquipmentToDelete(item);
+    // Reset other modals
+    setSelectedEquipment(null);
+    setEquipmentToEdit(null);
   };
 
   return (
@@ -189,6 +209,12 @@ const Equipment = () => {
         <EquipmentDetailsModal 
           equipment={selectedEquipment} 
           onClose={() => setSelectedEquipment(null)}
+          onEditClick={(equipment) => {
+            setEquipmentToEdit(equipment); 
+          }}
+          onHistoryClick={(equipment) => {
+            showRepairHistory(equipment);
+          }}
         />
       )}
       
@@ -203,6 +229,13 @@ const Equipment = () => {
         <DeleteConfirmationModal 
           equipment={equipmentToDelete}
           onClose={() => setEquipmentToDelete(null)}
+        />
+      )}
+      
+      {equipmentForHistory && (
+        <RepairHistoryModal 
+          equipment={equipmentForHistory}
+          onClose={() => setEquipmentForHistory(null)}
         />
       )}
     </div>
