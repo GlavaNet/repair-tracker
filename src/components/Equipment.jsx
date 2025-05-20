@@ -6,6 +6,7 @@ import NewEquipmentModal from './NewEquipmentModal';
 import EquipmentDetailsModal from './EquipmentDetailsModal';
 import EditEquipmentModal from './EditEquipmentModal';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
+import RepairHistoryModal from './RepairHistoryModal';
 
 const Equipment = () => {
   const { equipment, divisions } = useContext(AppContext);
@@ -52,12 +53,15 @@ const Equipment = () => {
 
   // Show repair history
   const showRepairHistory = (equipmentItem) => {
-    // Close all other modals first
+    console.log("showRepairHistory called with equipment:", equipmentItem);
+    
+    // Directly set the equipment for repair history
+    setEquipmentForHistory(equipmentItem);
+    
+    // Close all other modals
     setSelectedEquipment(null);
     setEquipmentToEdit(null);
     setEquipmentToDelete(null);
-    // Then set the equipment for repair history
-    setTimeout(() => setEquipmentForHistory(equipmentItem), 50);
   };
 
   // Show delete confirmation
@@ -235,7 +239,10 @@ const Equipment = () => {
       {equipmentForHistory && (
         <RepairHistoryModal 
           equipment={equipmentForHistory}
-          onClose={() => setEquipmentForHistory(null)}
+          onClose={() => {
+            console.log("Closing repair history modal");
+            setEquipmentForHistory(null);
+          }}
         />
       )}
     </div>

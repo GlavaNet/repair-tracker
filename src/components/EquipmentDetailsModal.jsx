@@ -19,12 +19,15 @@ const EquipmentDetailsModal = ({ equipment, onClose, onEditClick, onHistoryClick
   
   // Function to handle repair history button click
   const handleHistoryClick = () => {
-    // Signal to parent component to show history modal
+    console.log("View Repair History clicked for equipment:", equipment);
+    
+    // Close this modal
     onClose();
-    // Add small delay to prevent UI glitches
-    setTimeout(() => {
-      if (onHistoryClick) onHistoryClick(equipment);
-    }, 50);
+    
+    // Signal to parent component to show history modal
+    if (onHistoryClick) {
+      onHistoryClick(equipment);
+    }
   };
   
   return (

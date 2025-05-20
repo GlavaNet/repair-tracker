@@ -1,12 +1,26 @@
 // src/components/RepairHistoryModal.jsx
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { X, Clock, AlertCircle, Check, Clock4 } from 'lucide-react';
 import { AppContext } from '../context/AppContext';
 
 const RepairHistoryModal = ({ equipment, onClose }) => {
   const { requests } = useContext(AppContext);
   
-  if (!equipment) return null;
+  // Add effect for debugging
+  useEffect(() => {
+    console.log("RepairHistoryModal mounted with equipment:", equipment);
+    console.log("Requests available:", requests.length);
+    
+    if (equipment) {
+      const historyItems = requests.filter(req => req.equipmentId === equipment.id);
+      console.log(`Found ${historyItems.length} repair history items for ${equipment.id}`);
+    }
+  }, [equipment, requests]);
+  
+  if (!equipment) {
+    console.log("RepairHistoryModal: No equipment provided");
+    return null;
+  }
   
   // Get repair history for this equipment
   const repairHistory = requests
@@ -34,7 +48,7 @@ const RepairHistoryModal = ({ equipment, onClose }) => {
         </div>
         
         <div className="p-6">
-          {repairHistory.length > 0 ? (
+          {repairHistory && repairHistory.length > 0 ? (
             <div className="space-y-6">
               {repairHistory.map(repair => (
                 <div key={repair.id} className="border rounded-lg shadow-sm p-4 dark:border-gray-700">
