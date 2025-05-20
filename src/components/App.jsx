@@ -134,13 +134,23 @@ const App = () => {
   // Handle logout
   const handleLogout = async () => {
     try {
-      await msalInstance.logout();
+      // Set kiosk mode before logging out to ensure we return to it
+      setIsKioskMode(true);
+      
+      // Use post-logout redirect
+      const logoutRequest = {
+        postLogoutRedirectUri: window.location.href.includes('github.io') 
+          ? 'https://glavanet.github.io/repair-tracker/' 
+          : window.location.origin
+      };
+      
+      await msalInstance.logoutRedirect(logoutRequest);
     } catch (error) {
       console.error('Logout error:', error);
+      // Ensure we still switch to kiosk mode even if logout fails
+      setIsAuthenticated(false);
+      setUser(null);
     }
-    setIsAuthenticated(false);
-    setUser(null);
-    setIsKioskMode(true); // Return to kiosk mode on logout
   };
 
   // Handle request selection
