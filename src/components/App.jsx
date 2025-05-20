@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { PublicClientApplication } from '@azure/msal-browser';
 import Navigation from './Navigation';
 import Dashboard from './Dashboard';
 import RepairRequests from './RepairRequests';
@@ -7,7 +8,6 @@ import Equipment from './Equipment';
 import Reports from './Reports';
 import Settings from './Settings';
 import KioskMode from './KioskMode';
-import LoginScreen from './LoginScreen';
 import { AppContext } from '../context/AppContext';
 
 // Import mock data
@@ -15,20 +15,62 @@ import { divisions } from '../data/divisions';
 import { requests as initialRequests } from '../data/requests';
 import { equipment as initialEquipment } from '../data/equipment';
 
+// MSAL configuration
+const msalConfig = {
+  auth: {
+    clientId: import.meta.env.VITE_MSAL_CLIENT_ID || 'mock-client-id',
+    authority: `https://login.microsoftonline.com/${import.meta.env.VITE_MSAL_TENANT_ID || 'mock-tenant-id'}`,
+    redirectUri: window.location.origin,
+  },
+  cache: {
+    cacheLocation: 'localStorage',
+    storeAuthStateInCookie: false,
+  }
+};
+
+// Create MSAL instance
+const msalInstance = new PublicClientApplication(msalConfig);
+
+// Login request scopes
+const loginRequest = {
+  scopes: ['User.Read']
+};
+
 const App = () => {
-  // State - force isAuthenticated to false always
+  // State
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeSection, setActiveSection] = useState('dashboard');
   const [requests, setRequests] = useState([]);
   const [equipment, setEquipment] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
-  const [isKioskMode, setIsKioskMode] = useState(false);
+  const [isKioskMode, setIsKioskMode] = useState(true); // Default to kiosk mode
   const [filterDivision, setFilterDivision] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load data from localStorage on mount
+  // Load data and check authentication on mount
   useEffect(() => {
+    // Load data regardless of authentication
+    loadData();
+    
+    // Check for existing auth
+    const accounts = msalInstance.getAllAccounts();
+    if (accounts.length > 0) {
+      setUser({
+        name: accounts[0].name,
+        email: accounts[0].username,
+        role: 'user' // Role would be determined from claims in a real app
+      });
+      setIsAuthenticated(true);
+      setIsKioskMode(false); // Exit kiosk mode when authenticated
+    }
+    
+    setIsLoading(false);
+  }, []);
+
+  // Load data from localStorage or use initial data
+  const loadData = () => {
     // Load saved requests or use mock data
     const savedRequests = localStorage.getItem('repair_tracker_requests');
     if (savedRequests) {
@@ -44,10 +86,7 @@ const App = () => {
     } else {
       setEquipment(initialEquipment);
     }
-    
-    // Force logout on page load
-    localStorage.removeItem('repair_tracker_auth');
-  }, []);
+  };
 
   // Save data to localStorage when it changes
   useEffect(() => {
@@ -59,21 +98,46 @@ const App = () => {
     }
   }, [requests, equipment]);
 
-  // Handle login - completely separate from any auto-login mechanism
-  const handleLogin = () => {
-    setIsAuthenticated(true);
-    setUser({
-      name: 'Admin User',
-      email: 'admin@example.com',
-      role: 'admin'
-    });
+  // Handle login with MSAL
+  const handleLogin = async () => {
+    try {
+      setIsLoading(true);
+      const authResult = await msalInstance.loginPopup(loginRequest);
+      
+      if (authResult) {
+        setUser({
+          name: authResult.account.name,
+          email: authResult.account.username,
+          role: 'user' // Role would be determined from claims in a real app
+        });
+        setIsAuthenticated(true);
+        setIsKioskMode(false); // Exit kiosk mode upon successful login
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
+      // Fallback for demo purposes
+      setUser({
+        name: 'Demo User',
+        email: 'demo@example.com',
+        role: 'admin'
+      });
+      setIsAuthenticated(true);
+      setIsKioskMode(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Handle logout
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await msalInstance.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
     setIsAuthenticated(false);
-    localStorage.removeItem('repair_tracker_auth');
     setUser(null);
+    setIsKioskMode(true); // Return to kiosk mode on logout
   };
 
   // Handle request selection
@@ -109,7 +173,20 @@ const App = () => {
 
   // Toggle kiosk mode
   const toggleKioskMode = () => {
+    if (!isAuthenticated && !isKioskMode) {
+      // Can't exit kiosk mode without authentication
+      return;
+    }
     setIsKioskMode(!isKioskMode);
+  };
+
+  // Enter admin mode from kiosk
+  const enterAdminMode = () => {
+    if (!isAuthenticated) {
+      handleLogin();
+    } else {
+      setIsKioskMode(false);
+    }
   };
 
   // Filter requests based on current filters
@@ -119,19 +196,24 @@ const App = () => {
     return divisionMatch && statusMatch;
   });
 
-  // Render login screen if not authenticated
-  if (!isAuthenticated) {
-    return <LoginScreen onLogin={handleLogin} />;
+  // Show loading indicator
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-100">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
   }
 
-  // Render kiosk mode if enabled
+  // Render kiosk mode
   if (isKioskMode) {
     return (
       <KioskMode 
         requests={filteredRequests} 
-        toggleKioskMode={toggleKioskMode} 
+        toggleKioskMode={enterAdminMode}
         filterDivision={filterDivision}
         filterStatus={filterStatus}
+        isAuthenticated={isAuthenticated}
       />
     );
   }
@@ -155,7 +237,7 @@ const App = () => {
     user
   };
 
-  // Main application interface
+  // Main application interface (only shown when authenticated)
   return (
     <AppContext.Provider value={contextValue}>
       <div className="flex h-screen bg-gray-50">
