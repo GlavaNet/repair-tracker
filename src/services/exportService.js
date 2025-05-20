@@ -252,50 +252,90 @@ export const exportRequestsToExcel = (requests, filters = {}) => {
  * @param {Object} filters - Active filters for naming
  */
 export const exportRequestsToPDF = (requests, filters = {}) => {
-  // Define columns for PDF export (fewer columns for readability)
-  const columns = [
-    { header: 'Request ID', key: 'id' },
-    { header: 'Division', key: 'division' },
-    { header: 'Equipment', key: 'equipmentName' },
-    { header: 'Status', key: 'status' },
-    { header: 'Requested', key: 'dateRequested' },
-    { header: 'Completed', key: 'dateCompleted' }
-  ];
-  
-  // Generate filename based on filters
-  let filename = 'repair_requests';
-  if (filters.division && filters.division !== 'All') {
-    filename += `_${filters.division.toLowerCase().replace(/\s+/g, '_')}`;
+  try {
+    // Generate filename based on filters
+    let filename = 'repair_requests';
+    if (filters.division && filters.division !== 'All') {
+      filename += `_${filters.division.toLowerCase().replace(/\s+/g, '_')}`;
+    }
+    if (filters.status && filters.status !== 'All') {
+      filename += `_${filters.status.toLowerCase().replace(/\s+/g, '_')}`;
+    }
+    
+    // Create title based on filters
+    let title = 'Repair Requests Report';
+    
+    // Create PDF document
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text(title, 14, 22);
+    doc.setFontSize(10);
+    doc.text(`Generated on ${new Date().toLocaleDateString()}`, 14, 30);
+    
+    // Create simple table
+    const headers = ['Request ID', 'Division', 'Equipment', 'Status', 'Requested', 'Completed'];
+    const colWidth = 30;
+    const rowHeight = 10;
+    let y = 40;
+    
+    // Draw header
+    doc.setFillColor(66, 139, 202); // Blue header
+    doc.setTextColor(255, 255, 255); // White text for header
+    headers.forEach((header, i) => {
+      // Draw filled rectangle first
+      doc.rect(10 + (i * colWidth), y, colWidth, rowHeight, 'F');
+      // Then draw text
+      doc.text(header, 12 + (i * colWidth), y + 7);
+    });
+    
+    // Reset text color for rows
+    doc.setTextColor(0, 0, 0); // Black text for data
+    
+    // Draw rows
+    requests.forEach((request, index) => {
+      y += rowHeight;
+      
+      // Add new page if needed
+      if (y > 270) {
+        doc.addPage();
+        y = 20;
+      }
+      
+      // Set alternating row background colors
+      if (index % 2 === 0) {
+        doc.setFillColor(240, 240, 240); // Light gray for even rows
+      } else {
+        doc.setFillColor(255, 255, 255); // White for odd rows
+      }
+      
+      // Draw row cells with data
+      const rowData = [
+        request.id,
+        request.division,
+        request.equipmentName,
+        request.status,
+        request.dateRequested,
+        request.dateCompleted || '-'
+      ];
+      
+      rowData.forEach((text, i) => {
+        // Draw filled rectangle first
+        doc.rect(10 + (i * colWidth), y, colWidth, rowHeight, 'F');
+        // Then draw text (always black)
+        doc.text(String(text).substring(0, 14), 12 + (i * colWidth), y + 7);
+      });
+    });
+    
+    // Save PDF
+    doc.save(`${filename}.pdf`);
+    
+    return true;
+  } catch (error) {
+    console.error('PDF export failed:', error);
+    throw error;
   }
-  if (filters.status && filters.status !== 'All') {
-    filename += `_${filters.status.toLowerCase().replace(/\s+/g, '_')}`;
-  }
-  
-  // Create title based on filters
-  let title = 'Repair Requests Report';
-  let filterDetails = [];
-  
-  if (filters.division && filters.division !== 'All') {
-    filterDetails.push(`Division: ${filters.division}`);
-  }
-  if (filters.status && filters.status !== 'All') {
-    filterDetails.push(`Status: ${filters.status}`);
-  }
-  if (filters.dateRange?.start && filters.dateRange?.end) {
-    filterDetails.push(`Period: ${filters.dateRange.start} to ${filters.dateRange.end}`);
-  }
-  
-  const subtitle = filterDetails.length > 0 
-    ? `Generated on ${new Date().toLocaleDateString()} | ${filterDetails.join(' | ')}`
-    : `Generated on ${new Date().toLocaleDateString()}`;
-  
-  // Export to PDF
-  return exportToPDF(requests, {
-    filename: `${filename}.pdf`,
-    title,
-    subtitle,
-    columns
-  });
 };
 
 /**
