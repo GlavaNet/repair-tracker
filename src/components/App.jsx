@@ -33,7 +33,7 @@ const App = () => {
     if (savedAuth) {
       setIsAuthenticated(JSON.parse(savedAuth));
       // For demo, auto-authenticate
-      handleLogin();
+      // handleLogin();
     }
 
     // Load saved requests or use mock data
