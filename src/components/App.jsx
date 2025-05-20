@@ -115,14 +115,8 @@ const App = () => {
       }
     } catch (error) {
       console.error('Login failed:', error);
-      // Fallback for demo purposes
-      setUser({
-        name: 'Demo User',
-        email: 'demo@example.com',
-        role: 'admin'
-      });
-      setIsAuthenticated(true);
-      setIsKioskMode(false);
+      // No fallback to demo user - authentication is required
+      alert('Authentication failed. Please try again.');
     } finally {
       setIsLoading(false);
     }

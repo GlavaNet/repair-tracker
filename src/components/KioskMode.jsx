@@ -41,7 +41,7 @@ const KioskMode = ({ requests, toggleKioskMode, filterDivision, filterStatus, is
                 </>
               ) : (
                 <>
-                  <LogIn size={16} className="mr-1" /> Admin Login
+                  <LogIn size={16} className="mr-1" /> Sign in with Microsoft
                 </>
               )}
             </button>
