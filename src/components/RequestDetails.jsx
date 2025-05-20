@@ -1,5 +1,6 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
+import { X } from 'lucide-react';
 
 const RequestDetails = () => {
   const { 
@@ -7,8 +8,15 @@ const RequestDetails = () => {
     equipment, 
     handleStatusChange, 
     handleCompleteRequest, 
-    setActiveSection 
+    setActiveSection,
+    requests,
+    setRequests 
   } = useContext(AppContext);
+
+  // State for edit modal
+  const [showEditModal, setShowEditModal] = useState(false);
+  // State for edited request data
+  const [editData, setEditData] = useState({});
 
   if (!selectedRequest) {
     return (
@@ -29,13 +37,62 @@ const RequestDetails = () => {
   // Find equipment details
   const equipmentDetails = equipment.find(eq => eq.id === selectedRequest.equipmentId);
 
+  // Handler for back button click
+  const handleBackClick = (e) => {
+    e.preventDefault(); // Prevent any default behavior
+    setActiveSection('requests');
+  };
+
+  // Handler for status change
+  const onStatusChange = (e) => {
+    const newStatus = e.target.value;
+    handleStatusChange(selectedRequest.id, newStatus);
+  };
+
+  // Handler for mark as completed
+  const onCompleteRequest = () => {
+    handleCompleteRequest(selectedRequest.id);
+  };
+
+  // Handler for edit request
+  const onEditRequest = () => {
+    // Initialize edit data with current request data
+    setEditData({
+      ...selectedRequest,
+    });
+    setShowEditModal(true);
+  };
+
+  // Handle form input changes in edit modal
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditData({
+      ...editData,
+      [name]: value
+    });
+  };
+
+  // Save edited request
+  const saveEditedRequest = () => {
+    // Update the request in the requests array
+    const updatedRequests = requests.map(req => 
+      req.id === selectedRequest.id ? editData : req
+    );
+    
+    // Update context
+    setRequests(updatedRequests);
+    
+    // Close modal
+    setShowEditModal(false);
+  };
+
   return (
     <div className="p-6 dark:bg-gray-800">
       <div className="flex justify-between mb-6">
         <div className="flex items-center">
           <button 
-            onClick={() => setActiveSection('requests')}
-            className="mr-4 text-blue-600 dark:text-blue-400"
+            onClick={handleBackClick}
+            className="mr-4 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
           >
             ← Back to Requests
           </button>
@@ -46,7 +103,7 @@ const RequestDetails = () => {
           {!selectedRequest.dateCompleted && (
             <select 
               value={selectedRequest.status}
-              onChange={(e) => handleStatusChange(selectedRequest.id, e.target.value)}
+              onChange={onStatusChange}
               className="border rounded p-2 mr-2 dark:bg-gray-700 dark:text-white dark:border-gray-600"
             >
               <option value="New">New</option>
@@ -58,14 +115,17 @@ const RequestDetails = () => {
           
           {!selectedRequest.dateCompleted && (
             <button 
-              onClick={() => handleCompleteRequest(selectedRequest.id)}
-              className="bg-green-600 text-white px-4 py-2 rounded"
+              onClick={onCompleteRequest}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
             >
               Mark as Completed
             </button>
           )}
           
-          <button className="bg-blue-600 text-white px-4 py-2 rounded">
+          <button 
+            onClick={onEditRequest}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
             Edit Request
           </button>
         </div>
@@ -304,6 +364,169 @@ const RequestDetails = () => {
           </div>
         </div>
       </div>
+
+      {/* Edit Request Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b dark:border-gray-700 flex justify-between items-center">
+              <h3 className="text-lg font-medium dark:text-white">Edit Request</h3>
+              <button 
+                onClick={() => setShowEditModal(false)}
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                {/* Basic Info */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Requester Name
+                  </label>
+                  <input 
+                    type="text"
+                    name="requesterName"
+                    value={editData.requesterName || ''}
+                    onChange={handleEditChange}
+                    className="w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Job/Location
+                  </label>
+                  <input 
+                    type="text"
+                    name="jobLocation"
+                    value={editData.jobLocation || ''}
+                    onChange={handleEditChange}
+                    className="w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  />
+                </div>
+                
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Issue Description
+                  </label>
+                  <textarea
+                    name="description"
+                    value={editData.description || ''}
+                    onChange={handleEditChange}
+                    rows={3}
+                    className="w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  ></textarea>
+                </div>
+                
+                {/* Shop Crew Info */}
+                <div className="col-span-2 border-t dark:border-gray-700 pt-4 mt-2">
+                  <h4 className="font-medium mb-2 dark:text-white">Shop Crew Information</h4>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Parts/Service Required
+                  </label>
+                  <input 
+                    type="text"
+                    name="partsRequired"
+                    value={editData.partsRequired || ''}
+                    onChange={handleEditChange}
+                    className="w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Date Parts Ordered
+                  </label>
+                  <input 
+                    type="date"
+                    name="dateOrdered"
+                    value={editData.dateOrdered || ''}
+                    onChange={handleEditChange}
+                    className="w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Parts Vendor
+                  </label>
+                  <input 
+                    type="text"
+                    name="partsVendor"
+                    value={editData.partsVendor || ''}
+                    onChange={handleEditChange}
+                    className="w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Expected Arrival
+                  </label>
+                  <input 
+                    type="date"
+                    name="expectedArrival"
+                    value={editData.expectedArrival || ''}
+                    onChange={handleEditChange}
+                    className="w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Assigned Technician
+                  </label>
+                  <input 
+                    type="text"
+                    name="assignedTech"
+                    value={editData.assignedTech || ''}
+                    onChange={handleEditChange}
+                    className="w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Status
+                  </label>
+                  <select 
+                    name="status"
+                    value={editData.status || 'New'}
+                    onChange={handleEditChange}
+                    className="w-full border rounded p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  >
+                    <option value="New">New</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Awaiting Parts">Awaiting Parts</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-3">
+                <button 
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 border rounded text-gray-700 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={saveEditedRequest}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

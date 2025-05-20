@@ -4,12 +4,16 @@ import { Filter } from 'lucide-react';
 import { AppContext } from '../context/AppContext';
 import NewEquipmentModal from './NewEquipmentModal';
 import EquipmentDetailsModal from './EquipmentDetailsModal';
+import EditEquipmentModal from './EditEquipmentModal';
+import DeleteConfirmationModal from './DeleteConfirmationModal';
 
 const Equipment = () => {
   const { equipment, divisions } = useContext(AppContext);
   const [filterDivision, setFilterDivision] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEquipment, setSelectedEquipment] = useState(null);
+  const [equipmentToEdit, setEquipmentToEdit] = useState(null);
+  const [equipmentToDelete, setEquipmentToDelete] = useState(null);
   
   // State for new equipment modal
   const [showNewEquipmentModal, setShowNewEquipmentModal] = useState(false);
@@ -32,10 +36,24 @@ const Equipment = () => {
     setSelectedEquipment(item);
   };
 
+  // Show edit modal
+  const showEditModal = (e, equipmentId) => {
+    e.stopPropagation(); // Prevent row click from triggering
+    const item = equipment.find(eq => eq.id === equipmentId);
+    setEquipmentToEdit(item);
+  };
+
+  // Show delete confirmation
+  const showDeleteConfirmation = (e, equipmentId) => {
+    e.stopPropagation(); // Prevent row click from triggering
+    const item = equipment.find(eq => eq.id === equipmentId);
+    setEquipmentToDelete(item);
+  };
+
   return (
-    <div className="p-6 dark:bg-gray-800">
+    <div className="p-6 dark:bg-gray-800 dark:text-white">
       <div className="flex justify-between mb-6">
-        <h2 className="text-2xl font-bold dark:text-white">Equipment Database</h2>
+        <h2 className="text-2xl font-bold">Equipment Database</h2>
         <button 
           onClick={() => setShowNewEquipmentModal(true)}
           className="bg-blue-600 text-white px-4 py-2 rounded"
@@ -48,7 +66,7 @@ const Equipment = () => {
       <div className="bg-white dark:bg-gray-700 p-4 rounded-lg shadow mb-6 flex flex-wrap gap-4">
         <div className="flex items-center">
           <Filter size={20} className="text-gray-400 dark:text-gray-300 mr-2" />
-          <span className="text-sm font-medium mr-2 dark:text-white">Filters:</span>
+          <span className="text-sm font-medium dark:text-white mr-2">Filters:</span>
         </div>
         
         <div className="flex flex-wrap items-center gap-4">
@@ -104,36 +122,48 @@ const Equipment = () => {
           <tbody className="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
             {filteredEquipment.length > 0 ? (
               filteredEquipment.map(item => (
-                <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-600">
+                <tr key={item.id} 
+                  className="hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer"
+                  onClick={() => showEquipmentDetails(item.id)}
+                >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium dark:text-white">
                     {item.id}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm dark:text-gray-300">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm dark:text-gray-200">
                     {item.name}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm dark:text-gray-300">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm dark:text-gray-200">
                     {item.division}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm dark:text-gray-300">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm dark:text-gray-200">
                     {item.year}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm dark:text-gray-300">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm dark:text-gray-200">
                     {item.make} {item.model}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm max-w-xs truncate dark:text-gray-300">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm max-w-xs truncate dark:text-gray-200">
                     {item.vin}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button 
-                      onClick={() => showEquipmentDetails(item.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        showEquipmentDetails(item.id);
+                      }}
                       className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3"
                     >
                       View
                     </button>
-                    <button className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">
+                    <button 
+                      onClick={(e) => showEditModal(e, item.id)}
+                      className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3"
+                    >
                       Edit
                     </button>
-                    <button className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
+                    <button 
+                      onClick={(e) => showDeleteConfirmation(e, item.id)}
+                      className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
+                    >
                       Delete
                     </button>
                   </td>
@@ -159,6 +189,20 @@ const Equipment = () => {
         <EquipmentDetailsModal 
           equipment={selectedEquipment} 
           onClose={() => setSelectedEquipment(null)}
+        />
+      )}
+      
+      {equipmentToEdit && (
+        <EditEquipmentModal 
+          equipment={equipmentToEdit} 
+          onClose={() => setEquipmentToEdit(null)}
+        />
+      )}
+      
+      {equipmentToDelete && (
+        <DeleteConfirmationModal 
+          equipment={equipmentToDelete}
+          onClose={() => setEquipmentToDelete(null)}
         />
       )}
     </div>
