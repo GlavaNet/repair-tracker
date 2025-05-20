@@ -15,7 +15,7 @@ import { requests as initialRequests } from '../data/requests';
 import { equipment as initialEquipment } from '../data/equipment';
 
 const App = () => {
-  // State - FORCE authentication to be false on page load
+  // State
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeSection, setActiveSection] = useState('dashboard');
   const [requests, setRequests] = useState([]);
@@ -25,11 +25,10 @@ const App = () => {
   const [filterDivision, setFilterDivision] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
   const [user, setUser] = useState(null);
+  const [loggingIn, setLoggingIn] = useState(false);
 
   // Load data from localStorage on mount
   useEffect(() => {
-    // Completely remove the auth state check - this was causing auto-login
-    
     // Load saved requests or use mock data
     const savedRequests = localStorage.getItem('repair_tracker_requests');
     if (savedRequests) {
@@ -46,7 +45,7 @@ const App = () => {
       setEquipment(initialEquipment);
     }
     
-    // Always force logout on page refresh
+    // Force logout on page load
     localStorage.removeItem('repair_tracker_auth');
   }, []);
 
@@ -60,15 +59,22 @@ const App = () => {
     }
   }, [requests, equipment]);
 
-  // Handle login
-  const handleLogin = () => {
+  // Handle login button click
+  const handleLoginClick = () => {
+    // Instead of logging in directly, set a loading state
+    setLoggingIn(true);
+    
+    // Display an alert to verify the login flow
+    alert("Login requested. Click OK to continue.");
+    
+    // Now proceed with login
     setIsAuthenticated(true);
-    // Don't save to localStorage to prevent persistence between refreshes
     setUser({
       name: 'Admin User',
       email: 'admin@example.com',
       role: 'admin'
     });
+    setLoggingIn(false);
   };
 
   // Handle logout
@@ -129,10 +135,11 @@ const App = () => {
           <h1 className="text-2xl font-bold mb-6 text-center">Repair Request Tracker</h1>
           <p className="mb-6 text-center text-gray-600">Sign in with your Microsoft account</p>
           <button 
-            onClick={handleLogin}
+            onClick={handleLoginClick}
+            disabled={loggingIn}
             className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
           >
-            Sign In with Microsoft
+            {loggingIn ? 'Signing in...' : 'Sign In with Microsoft'}
           </button>
         </div>
       </div>
