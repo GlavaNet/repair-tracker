@@ -16,7 +16,7 @@ import { equipment as initialEquipment } from '../data/equipment';
 
 const App = () => {
   // State
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // Start unauthenticated
   const [activeSection, setActiveSection] = useState('dashboard');
   const [requests, setRequests] = useState([]);
   const [equipment, setEquipment] = useState([]);
@@ -28,13 +28,11 @@ const App = () => {
 
   // Load data from localStorage on mount
   useEffect(() => {
-    // Check for saved auth state
+    // Check for saved auth state but DO NOT auto login
     const savedAuth = localStorage.getItem('repair_tracker_auth');
-    if (savedAuth) {
-      setIsAuthenticated(JSON.parse(savedAuth));
-      // Auto-login removed
-    }
-
+    // We're removing any auto-login functionality
+    // Even if saved auth exists, require manual login
+    
     // Load saved requests or use mock data
     const savedRequests = localStorage.getItem('repair_tracker_requests');
     if (savedRequests) {
@@ -50,6 +48,9 @@ const App = () => {
     } else {
       setEquipment(initialEquipment);
     }
+    
+    // Clear any previous auth on page load/refresh
+    localStorage.removeItem('repair_tracker_auth');
   }, []);
 
   // Save data to localStorage when it changes

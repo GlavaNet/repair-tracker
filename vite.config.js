@@ -1,10 +1,9 @@
-// vite.config.js
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: './',
+  base: './', // This is the critical change for GitHub Pages
   esbuild: {
     loader: "jsx",
     include: /src\/.*\.jsx?$/,
@@ -17,4 +16,8 @@ export default defineConfig({
       },
     },
   },
+  css: {
+    // Add PostCSS config for Tailwind
+    postcss: './postcss.config.js'
+  }
 })
