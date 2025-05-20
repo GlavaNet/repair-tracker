@@ -1,6 +1,6 @@
 {
   "name": "repair-tracker",
-  "homepage": "https://your-username.github.io/repair-tracker",
+  "homepage": "./",
   "private": true,
   "version": "1.0.0",
   "type": "module",

@@ -32,8 +32,7 @@ const App = () => {
     const savedAuth = localStorage.getItem('repair_tracker_auth');
     if (savedAuth) {
       setIsAuthenticated(JSON.parse(savedAuth));
-      // For demo, auto-authenticate
-      // handleLogin();
+      // Auto-login removed
     }
 
     // Load saved requests or use mock data
