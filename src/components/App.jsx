@@ -7,6 +7,7 @@ import Equipment from './Equipment';
 import Reports from './Reports';
 import Settings from './Settings';
 import KioskMode from './KioskMode';
+import LoginScreen from './LoginScreen';
 import { AppContext } from '../context/AppContext';
 
 // Import mock data
@@ -15,7 +16,7 @@ import { requests as initialRequests } from '../data/requests';
 import { equipment as initialEquipment } from '../data/equipment';
 
 const App = () => {
-  // State
+  // State - force isAuthenticated to false always
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeSection, setActiveSection] = useState('dashboard');
   const [requests, setRequests] = useState([]);
@@ -25,7 +26,6 @@ const App = () => {
   const [filterDivision, setFilterDivision] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
   const [user, setUser] = useState(null);
-  const [showLoginConfirm, setShowLoginConfirm] = useState(false);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -59,25 +59,14 @@ const App = () => {
     }
   }, [requests, equipment]);
 
-  // Handle login button click - just show confirmation dialog
-  const handleLoginClick = () => {
-    setShowLoginConfirm(true);
-  };
-  
-  // Actual login function - separate from button handler
-  const confirmLogin = () => {
+  // Handle login - completely separate from any auto-login mechanism
+  const handleLogin = () => {
     setIsAuthenticated(true);
     setUser({
       name: 'Admin User',
       email: 'admin@example.com',
       role: 'admin'
     });
-    setShowLoginConfirm(false);
-  };
-  
-  // Cancel login
-  const cancelLogin = () => {
-    setShowLoginConfirm(false);
   };
 
   // Handle logout
@@ -132,41 +121,7 @@ const App = () => {
 
   // Render login screen if not authenticated
   if (!isAuthenticated) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-100">
-        <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
-          <h1 className="text-2xl font-bold mb-6 text-center">Repair Request Tracker</h1>
-          <p className="mb-6 text-center text-gray-600">Sign in with your Microsoft account</p>
-          
-          {showLoginConfirm ? (
-            <div>
-              <p className="mb-4 text-center">This is a demo login. Would you like to continue?</p>
-              <div className="flex space-x-4">
-                <button 
-                  onClick={cancelLogin}
-                  className="flex-1 bg-gray-300 text-gray-800 py-2 rounded hover:bg-gray-400 transition"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={confirmLogin}
-                  className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-                >
-                  Confirm Login
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button 
-              onClick={handleLoginClick}
-              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-            >
-              Sign In with Microsoft
-            </button>
-          )}
-        </div>
-      </div>
-    );
+    return <LoginScreen onLogin={handleLogin} />;
   }
 
   // Render kiosk mode if enabled
