@@ -1,95 +1,107 @@
-// Microsoft Entra ID (formerly Azure AD) authentication service
-import { PublicClientApplication } from '@azure/msal-browser';
+// src/services/authService.js
+import { auth } from './firebaseService';
+import { 
+  signInWithMicrosoft, 
+  signUserOut, 
+  getCurrentUser as getFirebaseUser,
+  onAuthStateChange
+} from './firebaseService';
 
-// MSAL configuration
-const msalConfig = {
-  auth: {
-    clientId: import.meta.env.VITE_MSAL_CLIENT_ID,
-    authority: `https://login.microsoftonline.com/${import.meta.env.VITE_MSAL_TENANT_ID}`,
-    redirectUri: window.location.origin,
-  },
-  cache: {
-    cacheLocation: 'localStorage',
-    storeAuthStateInCookie: false,
-  }
-};
-
-// Create MSAL instance
-const msalInstance = new PublicClientApplication(msalConfig);
-
-// Login scopes
-const loginRequest = {
-  scopes: ['User.Read']
-};
-
-// Handle login
+/**
+ * Handle login - now uses Firebase Authentication with Microsoft provider
+ * @returns {Promise} Authentication result
+ */
 export const login = async () => {
   try {
-    // Login via popup
-    const authResult = await msalInstance.loginPopup(loginRequest);
-    return authResult;
+    const result = await signInWithMicrosoft();
+    return result;
   } catch (error) {
     console.error('Authentication failed:', error);
     return null;
   }
 };
 
-// Handle logout
-export const logout = () => {
-  msalInstance.logout();
-};
-
-// Get current user
-export const getCurrentUser = () => {
-  const accounts = msalInstance.getAllAccounts();
-  if (accounts.length === 0) {
-    return null;
-  }
-  return accounts[0];
-};
-
-// Acquire token silently
-export const getToken = async () => {
-  const accounts = msalInstance.getAllAccounts();
-  if (accounts.length === 0) {
-    return null;
-  }
-  
-  const silentRequest = {
-    scopes: ['User.Read'],
-    account: accounts[0]
-  };
-  
+/**
+ * Handle logout
+ */
+export const logout = async () => {
   try {
-    const response = await msalInstance.acquireTokenSilent(silentRequest);
-    return response.accessToken;
+    await signUserOut();
+    return true;
   } catch (error) {
-    // Fall back to interactive method if silent acquisition fails
-    try {
-      const response = await msalInstance.acquireTokenPopup(silentRequest);
-      return response.accessToken;
-    } catch (interactiveError) {
-      console.error('Token acquisition failed:', interactiveError);
-      return null;
-    }
+    console.error('Logout error:', error);
+    return false;
   }
 };
 
-// Check if user is in a specific role/group
-export const isUserInRole = async (roleName) => {
+/**
+ * Get current user
+ * @returns {Object|null} User object or null if not signed in
+ */
+export const getCurrentUser = () => {
+  const firebaseUser = getFirebaseUser();
+  
+  if (!firebaseUser) {
+    return null;
+  }
+  
+  return {
+    name: firebaseUser.displayName,
+    email: firebaseUser.email,
+    role: 'user' // Default role - can be enhanced with custom claims
+  };
+};
+
+/**
+ * Subscribe to auth state changes
+ * @param {Function} callback Function to call when auth state changes
+ * @returns {Function} Unsubscribe function
+ */
+export const subscribeToAuthChanges = (callback) => {
+  return onAuthStateChange((user) => {
+    if (user) {
+      callback({
+        name: user.displayName,
+        email: user.email,
+        role: 'user' // Default role
+      });
+    } else {
+      callback(null);
+    }
+  });
+};
+
+/**
+ * Get authentication token for API calls
+ * @returns {Promise<string|null>} Token or null if not signed in
+ */
+export const getToken = async () => {
+  const user = getFirebaseUser();
+  if (!user) {
+    return null;
+  }
+  
   try {
-    const token = await getToken();
-    if (!token) return false;
-    
-    // In a real implementation, this would call Microsoft Graph API
-    // to check group membership
-    
-    // Mock implementation for demo purposes
-    const user = getCurrentUser();
-    if (!user) return false;
-    
-    // Mock roles based on email domain
-    if (user.username.includes('admin')) {
+    return await user.getIdToken();
+  } catch (error) {
+    console.error('Token acquisition failed:', error);
+    return null;
+  }
+};
+
+/**
+ * Check if user is in a specific role
+ * @param {string} roleName Role to check
+ * @returns {Promise<boolean>} True if user is in role
+ */
+export const isUserInRole = async (roleName) => {
+  const user = getFirebaseUser();
+  if (!user) return false;
+  
+  try {
+    // In a real scenario, this would check custom claims
+    // For now we'll use a simple email-based check similar to the original
+    if (user.email.includes('admin')) {
       return true; // Admin has all roles
     }
     
@@ -97,7 +109,7 @@ export const isUserInRole = async (roleName) => {
       return true; // All authenticated users can be requesters
     }
     
-    if (roleName === 'shopCrew' && user.username.includes('maintenance')) {
+    if (roleName === 'shopCrew' && user.email.includes('maintenance')) {
       return true;
     }
     
@@ -113,5 +125,6 @@ export default {
   logout,
   getCurrentUser,
   getToken,
-  isUserInRole
+  isUserInRole,
+  subscribeToAuthChanges
 };
